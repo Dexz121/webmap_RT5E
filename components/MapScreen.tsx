@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Mapbox from '@rnmapbox/maps';
+import Mapbox, {MapView, Camera} from '@rnmapbox/maps';
+
 
 Mapbox.setAccessToken('pk.eyJ1IjoicnRheGlzIiwiYSI6ImNtNDV3eGd5cDEzZm4ydm9vZHlqbzV1cm0ifQ.nrakoOEvPEysBDbRU1cyHQ');
 
@@ -8,7 +9,9 @@ const App = () => {
   return (
     <View style={styles.page}>
       <View style={styles.container}>
-        <Mapbox.MapView style={styles.map} />
+        <MapView style={styles.map} >
+        <Camera zoomLevel={11.6}  centerCoordinate={[-93.1167, 16.7528]}/>
+        </MapView>
       </View>
     </View>
   );
@@ -23,8 +26,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    height: 300,
-    width: 300,
+    height: '100%',
+    width: 420,
   },
   map: {
     flex: 1
