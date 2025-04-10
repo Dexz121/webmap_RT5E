@@ -1,39 +1,76 @@
 import React, { useEffect, useState } from "react";
-import { Slot, useRouter } from "expo-router";
-import { Stack } from "expo-router";
-import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth"
+import { SafeAreaView, Text } from "react-native";
+import { Provider, useDispatch } from "react-redux";
+import { store } from "../store";
+import { Stack, useRouter } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, getUserInfo } from "../firebase"; // importar getUserInfo
+import { setUser, clearUser } from "../slices/userSlice";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import "../global.css";
 
-export default function RootLayout() {
-  
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+// Creamos un wrapper para poder usar hooks dentro del Provider
+function AuthWrapper({ children }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useDispatch();
   const router = useRouter();
-  
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        console.log("Usuario logueado:", user.email);
-        setIsLoggedIn(true);
+        try {
+          console.log("Usuario logueado:", user.email);
+
+          const userData = await getUserInfo(user.uid);
+          if (userData && userData.role !== undefined) {
+            dispatch(setUser({
+              user: {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName,
+              },
+              role: userData.role,
+            }));
+          } else {
+            console.warn("El usuario no tiene rol definido en Firestore.");
+            dispatch(clearUser());
+          }
+        } catch (error) {
+          console.error("Error al obtener datos del usuario:", error);
+          dispatch(clearUser());
+        }
       } else {
         console.log("Usuario no está logueado");
-        setIsLoggedIn(false);
+        dispatch(clearUser());
         router.replace("/login");
       }
+      setIsLoading(false);
     });
-  
-    // Limpieza al desmontar el componente
+
     return () => unsubscribe();
   }, []);
-  
+
+  if (isLoading) {
+    return <Text style={{ marginTop: 50, textAlign: "center" }}>Cargando usuario...</Text>;
+  }
+
+  return children;
+}
+
+export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: "#6200ea" }, // Color de fondo del header
-        headerTintColor: "#fff", // Color del texto
-        headerTitleStyle: { fontSize: 18, fontWeight: "bold" }, // Estilo del título
-      }}
-    />
+    <Provider store={store}>
+      <SafeAreaView className="flex-1 bg-white">
+        <AuthWrapper>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: "#6200ea" },
+              headerTintColor: "#fff",
+              headerTitleStyle: { fontSize: 18, fontWeight: "bold" },
+            }}
+          />
+        </AuthWrapper>
+      </SafeAreaView>
+    </Provider>
   );
 }

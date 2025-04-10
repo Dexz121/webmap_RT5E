@@ -17,6 +17,9 @@ export default function Index() {
         Bienvenido a la app 🚖
       </Text>
       <Button title="Ir a Mapa" onPress={() => router.push("/map")} />
+      <Button title="Ir a test" onPress={() => router.push("/test")} />
+      <Button title="Ir a testUbicacion" onPress={() => router.push("/testUbicacion")} />
+      <Button title="Ir a testUbicacionContinua" onPress={() => router.push("/testUbicacionContinua")} />
     </View>
   );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import Mapbox, {MapView, Camera} from '@rnmapbox/maps';
+import Mapbox, {MapView, Camera, LocationPuck} from '@rnmapbox/maps';
 
 
 Mapbox.setAccessToken('pk.eyJ1IjoicnRheGlzIiwiYSI6ImNtNDV3eGd5cDEzZm4ydm9vZHlqbzV1cm0ifQ.nrakoOEvPEysBDbRU1cyHQ');
@@ -11,6 +11,7 @@ const App = () => {
       <View style={styles.container}>
         <MapView style={styles.map} >
         <Camera zoomLevel={11.6}  centerCoordinate={[-93.1167, 16.7528]}/>
+        <LocationPuck/>
         </MapView>
       </View>
     </View>

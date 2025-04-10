@@ -5,9 +5,7 @@ import LoginScreen from '@/screens/Login';
 export default function login() {
   return (
     <>
-        <Text className=' text-red-700'>
-            <LoginScreen/>
-        </Text>
+        <LoginScreen/>
     </>
   )
 }
