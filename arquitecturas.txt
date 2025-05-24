@@ -1,0 +1,55 @@
+app/
+  _layout.tsx            ← Layout raíz (no verifica auth)
+  auth/
+    _layout.tsx          ← Layout para rutas que requieren login
+    login.tsx
+    register.tsx
+  home/
+    index.tsx            ← Página principal logueado
+  onboarding/
+    index.tsx            ← Pantalla de bienvenida
+  admin/
+    ...                  ← Rutas protegidas por rol
+  user/
+    ...                  ← Rutas protegidas por rol
+
+components/
+  shared/
+  auth/
+  ui/
+
+redux/
+  store.ts
+  slices/
+    authSlice.ts
+    userSlice.ts
+    etc...
+
+firebase.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

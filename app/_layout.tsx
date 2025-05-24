@@ -1,74 +1,79 @@
+// app/_layout.tsx
 import React, { useEffect, useState } from "react";
 import { SafeAreaView, Text } from "react-native";
 import { Provider, useDispatch } from "react-redux";
-import { store } from "../store";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, getUserInfo } from "../firebase"; // importar getUserInfo
-import { setUser, clearUser } from "../slices/userSlice";
+import { auth, getUserInfo } from "@/firebase";
+import { setUser, clearUser, setLoading  } from "../slices/userSlice";
 import 'mapbox-gl/dist/mapbox-gl.css';
-import "../global.css";
+import "@/global.css";
+import { store } from "../store";
 
-// Creamos un wrapper para poder usar hooks dentro del Provider
 function AuthWrapper({ children }) {
-  const [isLoading, setIsLoading] = useState(true);
   const dispatch = useDispatch();
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        try {
-          console.log("Usuario logueado:", user.email);
+useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    dispatch(setLoading(true));
+    console.log("👀 Verificando usuario con Firebase...");
 
-          const userData = await getUserInfo(user.uid);
-          if (userData && userData.role !== undefined) {
-            dispatch(setUser({
-              user: {
-                uid: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-              },
-              role: userData.role,
-            }));
-          } else {
-            console.warn("El usuario no tiene rol definido en Firestore.");
-            dispatch(clearUser());
-          }
-        } catch (error) {
-          console.error("Error al obtener datos del usuario:", error);
+    try {
+      if (user) {
+        console.log("✅ Usuario autenticado:", user.email);
+
+        const userData = await getUserInfo(user.uid);
+        console.log("📄 Datos en Firestore:", userData);
+
+        if (userData && userData.role !== undefined) {
+          dispatch(setUser({
+            user: {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+            },
+            role: userData.role,
+          }));
+          console.log("🧠 Rol asignado:", userData.role);
+        } else {
+          console.warn("⚠️ El usuario no tiene rol definido. Limpiando estado.");
           dispatch(clearUser());
         }
       } else {
-        console.log("Usuario no está logueado");
+        console.log("🚫 No hay usuario autenticado.");
         dispatch(clearUser());
-        router.replace("/login");
       }
-      setIsLoading(false);
-    });
+    } catch (error) {
+      console.error("❌ Error al verificar usuario:", error);
+      dispatch(clearUser());
+    } finally {
+      dispatch(setLoading(false)); // ✅ importante para terminar la carga
+    }
+  });
 
-    return () => unsubscribe();
-  }, []);
+  return () => unsubscribe();
+}, []);
 
-  if (isLoading) {
-    return <Text style={{ marginTop: 50, textAlign: "center" }}>Cargando usuario...</Text>;
-  }
 
   return children;
 }
 
-export default function RootLayout() {
+export default function PublicLayout() {
   return (
     <Provider store={store}>
       <SafeAreaView className="flex-1 bg-white">
         <AuthWrapper>
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: "#6200ea" },
-              headerTintColor: "#fff",
-              headerTitleStyle: { fontSize: 18, fontWeight: "bold" },
-            }}
-          />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack
+              screenOptions={{
+                headerStyle: { backgroundColor: "#ffffff" },
+                headerTitleStyle: { fontWeight: "bold" },
+                headerTintColor: "#000",
+              }}
+            />
+          </GestureHandlerRootView>
         </AuthWrapper>
       </SafeAreaView>
     </Provider>

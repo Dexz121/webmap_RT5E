@@ -1,4 +1,3 @@
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -12,14 +11,12 @@ import {
   setDoc,
   deleteDoc,
 } from "firebase/firestore";
-import { 
+import {
+  getAuth,
   initializeAuth,
   GoogleAuthProvider,
-  signInWithPopup, 
-  signInWithCredential, 
-  signInWithRedirect, 
-  getAuth,
-  getReactNativePersistence
+  signInWithPopup,
+  getReactNativePersistence,
 } from "firebase/auth";
 import {
   getStorage,
@@ -28,7 +25,8 @@ import {
   getDownloadURL,
   getBytes,
 } from "firebase/storage";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBZwp0LClcaWb7guHWuS2whP7D8p-yzDs0",
@@ -37,17 +35,28 @@ const firebaseConfig = {
   storageBucket: "estrellas-fd5fd.firebasestorage.app",
   messagingSenderId: "311708590865",
   appId: "1:311708590865:web:7ef087892e89cb1fada2b0",
-  measurementId: "G-GZFDGMTQP1"
+  measurementId: "G-GZFDGMTQP1",
 };
 
-// Initialize Firebase
+// Inicializar app
 export const app = initializeApp(firebaseConfig);
-export const auth = initializeAuth(app, {
-  persistence: getReactNativePersistence(AsyncStorage)
-});
-export const db = getFirestore();
-export const storage = getStorage();
-const analytics = getAnalytics(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+// Inicializar auth de forma segura
+let auth;
+
+if (Platform.OS === "web") {
+  auth = getAuth(app); // Web no necesita AsyncStorage
+} else {
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+}
+
+export { auth };
+
+// -------------------- FUNCIONES --------------------
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -56,14 +65,13 @@ export async function signInWithGoogle() {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
 
-    // Verificar si el usuario ya existe en Firestore
     const userDoc = await getUserInfo(user.uid);
     if (!userDoc) {
       await registerNewUser({
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        role: 1, // Rol predeterminado
+        role: 1, // Rol por defecto
       });
     }
 
@@ -72,6 +80,10 @@ export async function signInWithGoogle() {
     console.error("Error al iniciar sesión con Google:", error);
     throw error;
   }
+}
+
+export async function logout() {
+  await auth.signOut();
 }
 
 export async function registerNewUser(user) {
@@ -83,8 +95,8 @@ export async function registerNewUser(user) {
     });
     console.log("Usuario registrado en Firestore:", user);
   } catch (e) {
-    console.error("Error adding document: ", e);
-    throw e; // Re-lanza el error para manejarlo externamente
+    console.error("Error registrando usuario:", e);
+    throw e;
   }
 }
 
@@ -97,33 +109,27 @@ export async function getUserInfo(uid) {
 export async function userExists(uid) {
   const docRef = doc(db, "users", uid);
   const docSnap = await getDoc(docRef);
-
   return docSnap.exists();
 }
 
 export async function updateUser(user) {
-  console.log(user);
   try {
     const usersRef = collection(db, "users");
     await setDoc(doc(usersRef, user.uid), user);
   } catch (e) {
-    console.error("Error adding document: ", e);
+    console.error("Error actualizando usuario:", e);
   }
 }
 
 export async function existsUsername(username) {
   const users = [];
   const q = query(collection(db, "users"), where("username", "==", username));
-
   const querySnapshot = await getDocs(q);
 
   querySnapshot.forEach((doc) => {
     console.log(doc.id, " => ", doc.data());
     users.push(doc.data());
   });
-  return users.length > 0 ? users[0].uid : null;
-}
 
-export async function logout() {
-  await auth.signOut();
+  return users.length > 0 ? users[0].uid : null;
 }
