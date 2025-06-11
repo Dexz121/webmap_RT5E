@@ -42,21 +42,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-
-// Inicializar auth de forma segura
-let auth;
-
-if (Platform.OS === "web") {
-  auth = getAuth(app); // Web no necesita AsyncStorage
-} else {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-}
-
-export { auth };
-
-// -------------------- FUNCIONES --------------------
+export const auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
 
 const googleProvider = new GoogleAuthProvider();
 
