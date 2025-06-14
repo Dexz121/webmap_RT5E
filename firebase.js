@@ -57,7 +57,9 @@ export async function signInWithGoogle() {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-        role: 1, // Rol por defecto
+        role: "pasajero",
+        estado: "Activo",
+        metodo_pago_predeterminado: "efectivo"
       });
     }
 
@@ -77,7 +79,9 @@ export async function registerNewUser(user) {
     const usersRef = collection(db, "users");
     await setDoc(doc(usersRef, user.uid), {
       ...user,
-      role: 1, // Rol por defecto
+      role: "pasajero",
+      estado: "Activo",
+      metodo_pago_predeterminado: "efectivo"
     });
     console.log("Usuario registrado en Firestore:", user);
   } catch (e) {

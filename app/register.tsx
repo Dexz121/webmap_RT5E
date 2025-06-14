@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, registerNewUser } from '../firebase';
 import { Picker } from '@react-native-picker/picker';
 import { useRouter } from 'expo-router';
@@ -12,78 +12,66 @@ export default function RegisterScreen() {
     name: '',
     age: '',
     gender: '',
+    telefono: '',
     email: '',
     password: '',
     confirmPassword: '',
+
+    // Campos ocultos (no se muestran en el formulario)
+    role: 'pasajero',
+    metodo_pago_predeterminado: 'efectivo',
+    estado: 'Activo',
   });
 
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
-    let newErrors = {};
+    let newErrors: any = {};
 
-    // Validar nombre
-    if (!formData.name.trim()) {
-      newErrors.name = 'El nombre es obligatorio.';
-    }
-
-    // Validar edad
-    if (!formData.age) {
-      newErrors.age = 'La edad es obligatoria.';
-    } else if (isNaN(formData.age) || formData.age <= 0) {
+    if (!formData.name.trim()) newErrors.name = 'El nombre es obligatorio.';
+    if (!formData.age || isNaN(Number(formData.age)) || Number(formData.age) <= 0)
       newErrors.age = 'Ingresa una edad válida.';
-    }
-
-    // Validar género
-    if (!formData.gender) {
-      newErrors.gender = 'Por favor selecciona un género válido.';
-    }
-
-    // Validar email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.gender) newErrors.gender = 'Selecciona un género.';
+    if (!formData.telefono.trim()) newErrors.telefono = 'El teléfono es obligatorio.';
     if (!formData.email.trim()) {
       newErrors.email = 'El correo electrónico es obligatorio.';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Ingresa un correo electrónico válido.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Correo electrónico inválido.';
     }
-
-    // Validar contraseña
     if (!formData.password) {
       newErrors.password = 'La contraseña es obligatoria.';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'La contraseña debe tener al menos 6 caracteres.';
+      newErrors.password = 'Mínimo 6 caracteres.';
     }
-
-    // Validar confirmación de contraseña
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'La confirmación de la contraseña es obligatoria.';
-    } else if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword || formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Las contraseñas no coinciden.';
     }
 
     setErrors(newErrors);
-
-    // Si no hay errores, el formulario es válido
     return Object.keys(newErrors).length === 0;
   };
 
   const handleRegister = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
-      // Registrar al usuario con Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
       const user = userCredential.user;
 
-      // Guardar información adicional en Firestore
       await registerNewUser({
         uid: user.uid,
-        name: formData.name,
+        email: user.email,
+        displayName: formData.name,
         age: formData.age,
         gender: formData.gender,
-        email: user.email,
+        telefono: formData.telefono,
+        role: formData.role,
+        estado: formData.estado,
+        metodo_pago_predeterminado: formData.metodo_pago_predeterminado,
       });
 
       Alert.alert('Éxito', 'Usuario registrado exitosamente');
@@ -99,30 +87,30 @@ export default function RegisterScreen() {
       <View className="w-full max-w-md bg-white p-6 rounded-lg shadow-lg">
         <Text className="text-2xl font-bold mb-8 text-center">Registro de Usuario</Text>
 
-        {/* Input para Nombre */}
+        {/* Nombre */}
         <TextInput
           placeholder="Nombre"
           className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           value={formData.name}
           onChangeText={(text) => setFormData({ ...formData, name: text })}
         />
-        {errors.name && <Text className="text-red-500 text-sm mb-4">{errors.name}</Text>}
+        {errors.name && <Text className="text-red-500 text-sm mb-2">{errors.name}</Text>}
 
-        {/* Input para Edad */}
+        {/* Edad */}
         <TextInput
           placeholder="Edad"
-          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           keyboardType="numeric"
+          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           value={formData.age}
           onChangeText={(text) => setFormData({ ...formData, age: text })}
         />
-        {errors.age && <Text className="text-red-500 text-sm mb-4">{errors.age}</Text>}
+        {errors.age && <Text className="text-red-500 text-sm mb-2">{errors.age}</Text>}
 
-        {/* Lista desplegable para Género */}
+        {/* Género */}
         <View className="w-full bg-gray-100 rounded-lg mb-2 border border-gray-300">
           <Picker
             selectedValue={formData.gender}
-            onValueChange={(itemValue) => setFormData({ ...formData, gender: itemValue })}
+            onValueChange={(val) => setFormData({ ...formData, gender: val })}
           >
             <Picker.Item label="Selecciona tu género" value="" />
             <Picker.Item label="Masculino" value="Masculino" />
@@ -131,43 +119,50 @@ export default function RegisterScreen() {
             <Picker.Item label="Prefiero no decirlo" value="Prefiero no decirlo" />
           </Picker>
         </View>
-        {errors.gender && <Text className="text-red-500 text-sm mb-4">{errors.gender}</Text>}
+        {errors.gender && <Text className="text-red-500 text-sm mb-2">{errors.gender}</Text>}
 
-        {/* Input para Correo */}
+        {/* Teléfono */}
+        <TextInput
+          placeholder="Teléfono"
+          keyboardType="phone-pad"
+          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
+          value={formData.telefono}
+          onChangeText={(text) => setFormData({ ...formData, telefono: text })}
+        />
+        {errors.telefono && <Text className="text-red-500 text-sm mb-2">{errors.telefono}</Text>}
+
+        {/* Email */}
         <TextInput
           placeholder="Correo"
-          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           keyboardType="email-address"
+          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           value={formData.email}
           onChangeText={(text) => setFormData({ ...formData, email: text })}
         />
-        {errors.email && <Text className="text-red-500 text-sm mb-4">{errors.email}</Text>}
+        {errors.email && <Text className="text-red-500 text-sm mb-2">{errors.email}</Text>}
 
-        {/* Input para Contraseña */}
+        {/* Contraseña */}
         <TextInput
           placeholder="Contraseña"
-          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           secureTextEntry
+          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           value={formData.password}
           onChangeText={(text) => setFormData({ ...formData, password: text })}
         />
-        {errors.password && <Text className="text-red-500 text-sm mb-4">{errors.password}</Text>}
+        {errors.password && <Text className="text-red-500 text-sm mb-2">{errors.password}</Text>}
 
-        {/* Input para Confirmar Contraseña */}
+        {/* Confirmar contraseña */}
         <TextInput
           placeholder="Confirmar Contraseña"
-          className="w-full bg-gray-100 p-4 rounded-lg mb-2 border border-gray-300"
           secureTextEntry
+          className="w-full bg-gray-100 p-4 rounded-lg mb-4 border border-gray-300"
           value={formData.confirmPassword}
           onChangeText={(text) => setFormData({ ...formData, confirmPassword: text })}
         />
-        {errors.confirmPassword && <Text className="text-red-500 text-sm mb-4">{errors.confirmPassword}</Text>}
+        {errors.confirmPassword && <Text className="text-red-500 text-sm mb-2">{errors.confirmPassword}</Text>}
 
-        {/* Botón de Registro */}
-        <TouchableOpacity
-          className="w-full bg-blue-500 py-3 rounded-lg"
-          onPress={handleRegister}
-        >
+        {/* Botón */}
+        <TouchableOpacity className="w-full bg-blue-500 py-3 rounded-lg" onPress={handleRegister}>
           <Text className="text-center text-white font-semibold">Registrar</Text>
         </TouchableOpacity>
       </View>

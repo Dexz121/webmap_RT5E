@@ -1,4 +1,4 @@
-//app/index.txs
+//app/Map.txs
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import Mapbox, {
@@ -16,7 +16,7 @@ Mapbox.setAccessToken(MAPBOX_TOKEN);
 
 const DEFAULT_CENTER: [number, number] = [-93.1167, 16.7528];
 
-export default function Index() {
+export default function Map() {
   const [origin, setOrigin] = useState<[number, number] | null>(null);
   const [destination, setDestination] = useState<[number, number] | null>(null);
   const [route, setRoute] = useState<any>(null);
