@@ -1,30 +1,31 @@
-// HomeScreen.tsx
-import React, { useState } from 'react';
+// screens/HomeScreen.tsx
+import React, { useState, useMemo } from 'react';
 import { View, Dimensions, Pressable, TouchableWithoutFeedback } from 'react-native';
-import UserScreen from './UserScreen';
-import PersistentMap from '../components/PersistentMap'; // ✅ Asegúrate de importarlo
+import Panel from './Panel';
 
 export default function HomeScreen() {
   const screenHeight = Dimensions.get('window').height;
-  const expandedHeight = (screenHeight * 2) / 3;
   const collapsedHeight = 60;
 
   const [isExpanded, setIsExpanded] = useState(true);
   const [destination, setDestination] = useState<[number, number] | null>(null);
+  const [mode, setMode] = useState<'menu' | 'historial' | 'solicitarViaje'>('menu');
+
+  const panelHeight = useMemo(() => {
+    if (!isExpanded) return collapsedHeight;
+    switch (mode) {
+      case 'solicitarViaje':
+        return screenHeight * 0.25;
+      case 'menu':
+      case 'historial':
+      default:
+        return screenHeight * 0.65;
+    }
+  }, [isExpanded, mode]);
 
   return (
     <View className="flex-1 relative">
-
-      {/* Mapa de fondo con destino dinámico */}
-      <PersistentMap
-        destination={destination}
-        onDestinationSelect={(coords) => {
-          setDestination(coords);
-          setIsExpanded(false); // opcional: colapsa el panel al marcar
-        }}
-      />
-
-      {/* Capa transparente que detecta toques en el mapa */}
+      {/* Capa transparente para colapsar el panel tocando el mapa */}
       {isExpanded && (
         <Pressable
           onPress={() => setIsExpanded(false)}
@@ -33,22 +34,28 @@ export default function HomeScreen() {
             top: 0,
             left: 0,
             right: 0,
-            bottom: expandedHeight,
+            bottom: panelHeight,
             zIndex: 1,
           }}
         />
       )}
 
-      {/* Panel flotante */}
+      {/* Panel dinámico */}
       <TouchableWithoutFeedback onPress={() => setIsExpanded(true)}>
         <View
           className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl overflow-hidden"
           style={{
-            height: isExpanded ? expandedHeight : collapsedHeight,
+            height: panelHeight,
             zIndex: 2,
           }}
         >
-          <UserScreen minimized={!isExpanded} onExpand={() => setIsExpanded(true)} />
+          <Panel
+            onDestinationSet={setDestination}
+            isCollapsed={!isExpanded}
+            expand={() => setIsExpanded(true)}
+            // ⚠️ Prop extra para sincronizar el modo en el futuro si deseas
+            // setMode externo no es necesario aún, pero útil si decides sincronizar.
+          />
         </View>
       </TouchableWithoutFeedback>
     </View>

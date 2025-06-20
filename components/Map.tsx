@@ -1,4 +1,4 @@
-//app/Map.txs
+//components/Map.txs //Utilizado como referencia, actualmente reemplazado por PersistentMap
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import Mapbox, {

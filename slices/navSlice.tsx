@@ -1,3 +1,4 @@
+//slices/navSlice.tsx
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState ={
@@ -9,7 +10,7 @@ const initialState ={
 export const navSlice = createSlice({
     name: "nav",
     initialState,
-    reducer: {
+    reducers: {
         setOrigin:(state, action) =>{
             state.origin = action.payload;
         },

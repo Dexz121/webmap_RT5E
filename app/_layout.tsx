@@ -10,9 +10,11 @@ import { setUser, clearUser, setLoading } from "../slices/userSlice";
 import { store } from "../store";
 import 'mapbox-gl/dist/mapbox-gl.css';
 import "@/global.css";
-import PersistentMap from "@/components/PersistentMap"; // 👈 Nuevo import
+import PersistentMap from "@/components/PersistentMap";
+import { ReactNode } from 'react';
 
-function AuthWrapper({ children }) {
+function AuthWrapper({ children }: { children: ReactNode }) {
+
   const dispatch = useDispatch();
   const router = useRouter();
 
