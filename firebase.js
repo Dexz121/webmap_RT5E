@@ -13,10 +13,8 @@ import {
 } from "firebase/firestore";
 import {
   getAuth,
-  initializeAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  getReactNativePersistence,
 } from "firebase/auth";
 import {
   getStorage,
@@ -42,7 +40,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const auth = initializeAuth(app, { persistence: getReactNativePersistence(AsyncStorage) });
+export const auth = getAuth(app);
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -122,4 +120,23 @@ export async function existsUsername(username) {
   });
 
   return users.length > 0 ? users[0].uid : null;
+}
+
+export async function getTarifas() {
+  const docRef = doc(db, 'tarifas', 'actual');
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return docSnap.data();
+  } else {
+    return null;
+  }
+}
+
+export async function setTarifas({ precio_base, tarifa_km }) {
+  const docRef = doc(db, 'tarifas', 'actual');
+  await setDoc(docRef, {
+    precio_base,
+    tarifa_km,
+    fecha_modificacion: new Date(),
+  });
 }

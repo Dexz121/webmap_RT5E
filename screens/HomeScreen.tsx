@@ -1,63 +1,82 @@
-// screens/HomeScreen.tsx
-import React, { useState, useMemo } from 'react';
-import { View, Dimensions, Pressable, TouchableWithoutFeedback } from 'react-native';
-import Panel from './Panel';
+//screens/HomeScreen.tsx
+import React, { useState } from 'react';
+import { View, Modal, Pressable, Text } from 'react-native';
+import PersistentMap from '@/components/PersistentMap';
+import UserMenu from '@/components/UserMenu';
+import Tarifa from '@/screens/Tarifa';
+import Pagos from '@/screens/Pagos';
+import Vehiculos from '@/screens/Vehiculos';
+import Usuarios from '@/screens/Usuarios'
 
 export default function HomeScreen() {
-  const screenHeight = Dimensions.get('window').height;
-  const collapsedHeight = 60;
+  const [panelView, setPanelView] = useState<'viajes' | 'tarifa' | 'pagos' | 'acciones' | 'vehiculos' | 'usuarios' | null>(null);
 
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [destination, setDestination] = useState<[number, number] | null>(null);
-  const [mode, setMode] = useState<'menu' | 'historial' | 'solicitarViaje'>('menu');
+  const closeModal = () => setPanelView(null);
 
-  const panelHeight = useMemo(() => {
-    if (!isExpanded) return collapsedHeight;
-    switch (mode) {
-      case 'solicitarViaje':
-        return screenHeight * 0.25;
-      case 'menu':
-      case 'historial':
+  const renderModalContent = () => {
+    switch (panelView) {
+      case 'viajes':
+        return <Text>📋 Lista de viajes</Text>;
+      case 'tarifa':
+        return (
+          <View className="w-auto">
+            <Tarifa />
+          </View>
+        );
+      case 'pagos':
+        return (
+          <View className="w-auto">
+            <Pagos />
+          </View>
+        );
+      case 'vehiculos':
+        return (
+          <View className="w-auto">
+            <Vehiculos />
+          </View>
+        );
+      case 'usuarios':
+        return (
+          <View className="w-auto">
+            <Usuarios />
+          </View>
+        );
+      case 'acciones':
+        return <Text>⚙️ Acciones del sistema</Text>;
       default:
-        return screenHeight * 0.65;
+        return null;
     }
-  }, [isExpanded, mode]);
+  };
 
   return (
-    <View className="flex-1 relative">
-      {/* Capa transparente para colapsar el panel tocando el mapa */}
-      {isExpanded && (
-        <Pressable
-          onPress={() => setIsExpanded(false)}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: panelHeight,
-            zIndex: 1,
-          }}
-        />
-      )}
+    <View className="flex-1">
+      {/* Mapa de fondo */}
+      <PersistentMap />
 
-      {/* Panel dinámico */}
-      <TouchableWithoutFeedback onPress={() => setIsExpanded(true)}>
-        <View
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl overflow-hidden"
-          style={{
-            height: panelHeight,
-            zIndex: 2,
-          }}
-        >
-          <Panel
-            onDestinationSet={setDestination}
-            isCollapsed={!isExpanded}
-            expand={() => setIsExpanded(true)}
-            // ⚠️ Prop extra para sincronizar el modo en el futuro si deseas
-            // setMode externo no es necesario aún, pero útil si decides sincronizar.
-          />
+      {/* Menú vertical a la izquierda */}
+      <UserMenu onNavigate={(view) => setPanelView(view)} />
+
+      {/* Modal flotante al centro */}
+      <Modal
+        animationType="fade"
+        transparent
+        visible={panelView !== null}
+        onRequestClose={closeModal}
+      >
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View
+            className={`bg-white p-6 rounded-xl w-full max-h-[90%] ${panelView === 'tarifa' ? 'max-w-sm' : panelView === 'usuarios' ? 'max-w-6xl' : 'max-w-5xl'
+              }`}
+          >            {renderModalContent()}
+            <Pressable
+              onPress={closeModal}
+              className="mt-4 bg-gray-200 rounded px-4 py-2"
+            >
+              <Text className="text-center text-black">Cerrar</Text>
+            </Pressable>
+          </View>
         </View>
-      </TouchableWithoutFeedback>
+      </Modal>
     </View>
   );
 }

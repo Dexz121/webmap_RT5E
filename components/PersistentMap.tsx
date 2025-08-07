@@ -1,150 +1,79 @@
 // components/PersistentMap.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
-import Mapbox, {
-  MapView,
-  Camera,
-  LocationPuck,
-  PointAnnotation,
-  ShapeSource,
-  LineLayer,
-  UserLocation,
-} from '@rnmapbox/maps';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectRole } from '../slices/userSlice';
-import { setOrigin, setDestination, setTravelTimeInformation } from '../slices/navSlice';
-import { db } from '../firebase';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import React, { useRef, useEffect, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
+import { useSelector } from 'react-redux';
+import { selectRole } from '@/slices/userSlice';
+import { useConductoresAdmin } from '@/hooks/useConductoresAdmin';
 
-const MAPBOX_TOKEN = 'pk.eyJ1IjoicnRheGlzIiwiYSI6ImNtNDV3eGd5cDEzZm4ydm9vZHlqbzV1cm0ifQ.nrakoOEvPEysBDbRU1cyHQ';
-Mapbox.setAccessToken(MAPBOX_TOKEN);
-
+const TOKEN = 'pk.eyJ1IjoicnRheGlzIiwiYSI6ImNtNDV3eGd5cDEzZm4ydm9vZHlqbzV1cm0ifQ.nrakoOEvPEysBDbRU1cyHQ';
 const DEFAULT_CENTER: [number, number] = [-93.1167, 16.7528];
-const iconOrigen = require('../assets/images/viajes.png');
-const iconDestino = require('../assets/images/origen.png');
-const iconTaxi = require('../assets/images/carro.png');
+const DEFAULT_ZOOM = 12.5;
 
 export default function PersistentMap() {
-  const dispatch = useDispatch();
   const role = useSelector(selectRole);
-
-  const [origin, setLocalOrigin] = useState<[number, number] | null>(null);
-  const [destination, setLocalDestination] = useState<[number, number] | null>(null);
-  const [route, setRoute] = useState<any>(null);
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [taxis, setTaxis] = useState<{ id: string; coord: [number, number] }[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<mapboxgl.Map>();
 
-  const handleUserLocationUpdate = (location: any) => {
-    const coords: [number, number] = [
-      location.coords.longitude,
-      location.coords.latitude,
-    ];
-    setUserLocation(coords);
-  };
-
-  const handleMapPress = (e: any) => {
-    if (role !== 'pasajero') return;
-
-    const coords: [number, number] = e.geometry.coordinates;
-
-    if (!origin) {
-      setLocalOrigin(coords);
-      setLocalDestination(null);
-      setRoute(null);
-    } else if (!destination) {
-      setLocalDestination(coords);
-    } else {
-      setLocalOrigin(coords);
-      setLocalDestination(null);
-      setRoute(null);
-    }
-  };
+  useConductoresAdmin(role, setTaxis);
 
   useEffect(() => {
-    if (origin && destination && role === 'pasajero') {
-      const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+    if (!containerRef.current) return;
 
-      fetch(url)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.routes?.length > 0) {
-            const routeData = data.routes[0];
-            setRoute(routeData.geometry);
+    mapboxgl.accessToken = TOKEN;
+    mapRef.current = new mapboxgl.Map({
+      container: containerRef.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: DEFAULT_CENTER,
+      zoom: DEFAULT_ZOOM,
+    });
 
-            dispatch(setOrigin(origin));
-            dispatch(setDestination(destination));
-            dispatch(setTravelTimeInformation({
-              distance: routeData.distance, // en metros
-              duration: routeData.duration, // en segundos
-            }));
-          } else {
-            setRoute(null);
-          }
-        })
-        .catch((err) => console.error('Error al obtener la ruta:', err));
-    }
-  }, [origin, destination, role]);
+    return () => {
+      mapRef.current?.remove();
+    };
+  }, []);
 
   useEffect(() => {
-    if (role === 'admin' || role === 'conductor') {
-      const cargarTaxis = async () => {
-        try {
-          const q = query(collection(db, 'usuarios'), where('role', '==', 'pasajero'));
-          const snapshot = await getDocs(q);
-          const taxisList: { id: string; coord: [number, number] }[] = [];
+    if (!mapRef.current) return;
+    const map = mapRef.current;
 
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            if (data.ubicacion?.latitude && data.ubicacion?.longitude) {
-              taxisList.push({
-                id: doc.id,
-                coord: [data.ubicacion.longitude, data.ubicacion.latitude],
-              });
-            }
-          });
-
-          setTaxis(taxisList);
-        } catch (error) {
-          console.error('Error al cargar taxis:', error);
-        }
+    map.on('load', () => {
+      const geojson = {
+        type: 'FeatureCollection',
+        features: taxis.map((taxi) => ({
+          type: 'Feature',
+          properties: { id: taxi.id },
+          geometry: {
+            type: 'Point',
+            coordinates: taxi.coord,
+          },
+        })),
       };
 
-      cargarTaxis();
-    }
-  }, [role]);
+      if (map.getSource('taxis-source')) {
+        (map.getSource('taxis-source') as mapboxgl.GeoJSONSource).setData(geojson);
+      } else {
+        map.addSource('taxis-source', { type: 'geojson', data: geojson });
+        map.addLayer({
+          id: 'taxis-layer',
+          type: 'circle',
+          source: 'taxis-source',
+          paint: {
+            'circle-radius': 8,
+            'circle-color': '#007cbf',
+          },
+        });
+      }
+    });
+
+    return () => {
+      map.off('load');
+    };
+  }, [taxis]);
+
 
   return (
-    <MapView style={StyleSheet.absoluteFill} onPress={handleMapPress}>
-      <Camera
-        zoomLevel={14}
-        centerCoordinate={origin || userLocation || DEFAULT_CENTER}
-      />
-      <UserLocation visible onUpdate={handleUserLocationUpdate} />
-      <LocationPuck />
-
-      {origin && (
-        <PointAnnotation id="origen" coordinate={origin}>
-          <Image source={iconOrigen} style={{ width: 30, height: 30 }} />
-        </PointAnnotation>
-      )}
-
-      {destination && (
-        <PointAnnotation id="destino" coordinate={destination}>
-          <Image source={iconDestino} style={{ width: 30, height: 30 }} />
-        </PointAnnotation>
-      )}
-
-      {route && (
-        <ShapeSource id="route" shape={{ type: 'Feature', geometry: route, properties: {} }}>
-          <LineLayer id="routeLine" style={{ lineColor: 'blue', lineWidth: 4 }} />
-        </ShapeSource>
-      )}
-
-      {taxis.map((taxi) => (
-        <PointAnnotation key={taxi.id} id={`taxi-${taxi.id}`} coordinate={taxi.coord}>
-          <Image source={iconTaxi} style={{ width: 30, height: 30 }} />
-        </PointAnnotation>
-      ))}
-    </MapView>
+    <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
   );
 }

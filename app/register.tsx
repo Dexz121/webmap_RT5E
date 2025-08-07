@@ -1,4 +1,4 @@
-//register.tsx
+//app/register.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -17,7 +17,7 @@ export default function RegisterScreen() {
     email: '',
     password: '',
     confirmPassword: '',
-
+     expoPushToken: '',
     // Campos ocultos (no se muestran en el formulario)
     role: 'pasajero',
     metodo_pago_predeterminado: 'efectivo',

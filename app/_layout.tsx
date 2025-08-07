@@ -12,6 +12,15 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import "@/global.css";
 import PersistentMap from "@/components/PersistentMap";
 import { ReactNode } from 'react';
+import * as Notifications from 'expo-notifications';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
 
 function AuthWrapper({ children }: { children: ReactNode }) {
 
@@ -68,10 +77,7 @@ export default function PublicLayout() {
         <AuthWrapper>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={{ flex: 1 }}>
-              {/* Mapa persistente al fondo */}
-              <PersistentMap />
-              {/* Pantallas encima */}
-              <View style={StyleSheet.absoluteFill}>
+              <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
                 <Slot />
               </View>
             </View>

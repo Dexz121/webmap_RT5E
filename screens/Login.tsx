@@ -55,10 +55,6 @@ export default function LoginScreen() {
         >
           <Text className="text-center text-white font-semibold">Continuar con Google</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity className="w-full bg-blue-700 py-3 rounded-lg">
-          <Text className="text-center text-white font-semibold">Continuar con Facebook</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
