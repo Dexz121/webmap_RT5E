@@ -7,14 +7,21 @@ import Tarifa from '@/screens/Tarifa';
 import Pagos from '@/screens/Pagos';
 import Vehiculos from '@/screens/Vehiculos';
 import Usuarios from '@/screens/Usuarios'
+import AsignarViajes from '@/screens/AsignarViajes';
 
 export default function HomeScreen() {
-  const [panelView, setPanelView] = useState<'viajes' | 'tarifa' | 'pagos' | 'acciones' | 'vehiculos' | 'usuarios' | null>(null);
+  const [panelView, setPanelView] = useState<'asignarViajes' | 'viajes' | 'tarifa' | 'pagos' | 'acciones' | 'vehiculos' | 'usuarios' | null>(null);
 
   const closeModal = () => setPanelView(null);
 
   const renderModalContent = () => {
     switch (panelView) {
+      case 'asignarViajes':
+        return (
+          <View className="w-auto">
+            <AsignarViajes />
+          </View>
+        );
       case 'viajes':
         return <Text>📋 Lista de viajes</Text>;
       case 'tarifa':

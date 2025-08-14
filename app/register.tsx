@@ -21,7 +21,7 @@ export default function RegisterScreen() {
     // Campos ocultos (no se muestran en el formulario)
     role: 'pasajero',
     metodo_pago_predeterminado: 'efectivo',
-    estado: 'Activo',
+    estado: 'activo',
   });
 
   const [errors, setErrors] = useState({});

@@ -4,14 +4,14 @@ import { View, Image, Text, TouchableOpacity } from 'react-native';
 
 interface UsuarioMenuProps {
   onNavigate: (
-    screen: 'menu' | 'paqueteria' | 'solicitarViaje' |
+    screen: 'menu' | 'asignarViajePaqueteria' | 'asignarViaje' |
       'usuarios' | 'vehiculos' | 'viajes' | 'pagos' | 'tarifa'
   ) => void;
 }
 
 const botones = [
-  { label: 'Viaje', screen: 'solicitarViaje', icon: require('../assets/images/viajes-1.png') },
-  { label: 'Paquete', screen: 'paqueteria', icon: require('../assets/images/paquete-1.png') },
+  { label: 'Asignar viaje', screen: 'asignarViajes', icon: require('../assets/images/viajes-1.png') },
+  { label: 'Asignar viaje paquete', screen: 'asignarViajePaqueteria', icon: require('../assets/images/paquete-1.png') },
   { label: 'Usuarios', screen: 'usuarios', icon: require('../assets/images/user.png') },
   { label: 'Vehículos', screen: 'vehiculos', icon: require('../assets/images/carros.png') },
   { label: 'Viajes', screen: 'viajes', icon: require('../assets/images/informe-5.png') },

@@ -6,8 +6,6 @@ import { db } from '../firebase';
 import { router } from 'expo-router';
 import Register from '@/app/register';
 import VerUsuario from '@/screens/VerUsuario';
-import EditarUsuario from '@/screens/EditarUsuario';
-
 
 const USUARIOS_POR_PAGINA = 5;
 
@@ -17,8 +15,6 @@ export default function UsuariosIndex() {
   const [paginaActual, setPaginaActual] = useState(1);
   const [usuarioParaVer, setUsuarioParaVer] = useState<string | null>(null);
   const [mostrarAgregar, setMostrarAgregar] = useState(false);
-  const [mostrarEditar, setMostrarEditar] = useState(false);
-  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
   const fetchUsuarios = async () => {
     try {
@@ -70,35 +66,12 @@ export default function UsuariosIndex() {
               <Register
                 onSuccess={() => {
                   setMostrarAgregar(false);
-                  fetchUsuarios(); // o como se llame tu recarga
+                  fetchUsuarios();
                 }}
               />
             </ScrollView>
             <TouchableOpacity
               onPress={() => setMostrarAgregar(false)}
-              className="mt-4 bg-gray-200 rounded px-4 py-2"
-            >
-              <Text className="text-center text-black">Cerrar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal editar */}
-      <Modal visible={mostrarEditar} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/40">
-          <View className="bg-white p-4 rounded-xl w-full max-w-4xl max-h-[90%]">
-            <ScrollView>
-              <EditarUsuario
-                initialData={usuarioSeleccionado}
-                onSuccess={() => {
-                  setMostrarEditar(false);
-                  fetchUsuarios(); // misma función
-                }}
-              />
-            </ScrollView>
-            <TouchableOpacity
-              onPress={() => setMostrarEditar(false)}
               className="mt-4 bg-gray-200 rounded px-4 py-2"
             >
               <Text className="text-center text-black">Cerrar</Text>
@@ -123,7 +96,6 @@ export default function UsuariosIndex() {
           </View>
         </View>
       </Modal>
-
 
       <Text className="text-2xl font-bold mb-4 text-center">Lista de Usuarios</Text>
 
@@ -151,9 +123,7 @@ export default function UsuariosIndex() {
           <View>
             <View className="flex-row border-b border-gray-400 pb-2">
               {["Nombre", "Email", "Rol", "Teléfono", "Estado", "Acción"].map((h) => (
-                <Text key={h} className="w-40 font-bold text-black text-center">
-                  {h}
-                </Text>
+                <Text key={h} className="w-40 font-bold text-black text-center">{h}</Text>
               ))}
             </View>
 
@@ -170,8 +140,7 @@ export default function UsuariosIndex() {
                   <Text className="w-40 text-center text-gray-800">{usuario.role}</Text>
                   <Text className="w-40 text-center text-gray-800">{usuario.telefono}</Text>
                   <Text
-                    className={`w-40 text-center font-semibold ${esActivo ? 'text-green-600' : 'text-red-500'
-                      }`}
+                    className={`w-40 text-center font-semibold ${esActivo ? 'text-green-600' : 'text-red-500'}`}
                   >
                     {estado}
                   </Text>
@@ -185,18 +154,16 @@ export default function UsuariosIndex() {
                     </TouchableOpacity>
                     <TouchableOpacity
                       className="bg-blue-500 px-3 py-1 rounded-full"
-                      onPress={() => setMostrarEditar(true)}
-
+                      onPress={() => router.push(`/usuarios/editar/${usuario.id}`)}
                     >
                       <Text className="text-white text-sm">Editar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      className={`px-3 py-1 rounded-full ${esActivo ? 'bg-red-500' : 'bg-green-500'
-                        }`}
+                      className={`px-3 py-1 rounded-full ${esActivo ? 'bg-red-500' : 'bg-green-500'}`}
                       onPress={() => toggleEstado(usuario.id, estado)}
                     >
                       <Text className="text-white text-sm">
-                        {esActivo ? 'Deshabilitar' : 'Activar'}
+                        {esActivo ? 'deshabilitar' : 'activar'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -211,14 +178,10 @@ export default function UsuariosIndex() {
             {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
               <TouchableOpacity
                 key={pagina}
-                className={`px-4 py-2 rounded-full ${paginaActual === pagina ? 'bg-yellow-500' : 'bg-gray-200'
-                  }`}
+                className={`px-4 py-2 rounded-full ${paginaActual === pagina ? 'bg-yellow-500' : 'bg-gray-200'}`}
                 onPress={() => setPaginaActual(pagina)}
               >
-                <Text
-                  className={`font-semibold ${paginaActual === pagina ? 'text-white' : 'text-black'
-                    }`}
-                >
+                <Text className={`font-semibold ${paginaActual === pagina ? 'text-white' : 'text-black'}`}>
                   {pagina}
                 </Text>
               </TouchableOpacity>
