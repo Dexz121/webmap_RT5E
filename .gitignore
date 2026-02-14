@@ -1,0 +1,64 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env
+.env*.local
+
+# Firebase Admin SDK
+firebase-admin-key.json
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# Archivos comprimidos / no subir al repo
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+
+# Windows
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Temporales y respaldos
+*.tmp
+*.temp
+*.bak
+*.backup
+*~
+*.log
+*.cache

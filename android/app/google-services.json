@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "311708590865",
+    "project_id": "estrellas-fd5fd",
+    "storage_bucket": "estrellas-fd5fd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:311708590865:android:015cd2e52b36ff6fada2b0",
+        "android_client_info": {
+          "package_name": "com.anonymous.webmap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "311708590865-48a1dnqm9oo4c90dl98nlmt3ebmae31o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBcu9t0r61FmIvK1jjPXBeAmOH5DO0BrkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "311708590865-48a1dnqm9oo4c90dl98nlmt3ebmae31o.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
