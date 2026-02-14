@@ -1,6 +1,32 @@
 # Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app). Proyecto web para la administración del RT5E (mapa, conductores, viajes, usuarios).
+
+## Cómo correr el Webmap (npm run web)
+
+Requisitos: Node.js (v18 o superior) y npm.
+
+1. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
+
+2. **Configurar variables de entorno**  
+   Crea un archivo `.env` en la raíz del proyecto (copia `.env.example` y edítalo). El mapa requiere un token de Mapbox:
+   ```bash
+   cp .env.example .env
+   ```
+   Edita `.env` y asigna tu token público de Mapbox a:
+   ```
+   EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN=pk.tu_token_aqui
+   ```
+   Obtén un token en [Mapbox](https://account.mapbox.com/access-tokens/). No subas `.env` al repositorio.
+
+3. **Levantar la app en el navegador**
+   ```bash
+   npm run web
+   ```
+   Se abrirá la app en modo web. Si no se abre solo, entra en la URL que muestre la terminal (por ejemplo `http://localhost:8081`).
 
 ## Get started
 
